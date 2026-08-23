@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Dashboard | File Integrity Monitor
+    </title>
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="page">
+
+
+    <!-- ================================= -->
+    <!-- NAVBAR -->
+    <!-- ================================= -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+
+            <div class="logo-box">
+                FIM
+            </div>
+
+            <div class="logo-text">
+
+                <h1>
+                    File Integrity Monitor
+                </h1>
+
+                <span>
+                    Cybersecurity Dashboard
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="status">
+
+            <span class="status-dot"></span>
+
+            System Protected
+
+        </div>
+
+    </nav>
+
+
+    <!-- ================================= -->
+    <!-- MAIN -->
+    <!-- ================================= -->
+
+    <main class="main-content">
+
+
+        <div class="dashboard-header">
+
+            <div>
+
+                <h2>
+                    Security Dashboard
+                </h2>
+
+                <p>
+                    Monitor file integrity and detect unauthorized changes.
+                </p>
+
+            </div>
+
+            <div class="live-indicator">
+
+                <span></span>
+
+                LIVE MONITORING
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- STATISTICS -->
+        <!-- ================================= -->
+
+        <div class="stats-grid">
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    📁
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Monitored Files
+                    </span>
+
+                    <h3 id="monitored-count">
+                        0
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon warning">
+                    ✏️
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Modified
+                    </span>
+
+                    <h3 id="modified-count">
+                        0
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon success">
+                    ➕
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Created
+                    </span>
+
+                    <h3 id="created-count">
+                        0
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon danger">
+                    🗑️
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Deleted
+                    </span>
+
+                    <h3 id="deleted-count">
+                        0
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- EVENTS -->
+        <!-- ================================= -->
+
+        <div class="events-section">
+
+
+            <div class="events-header">
+
+                <div>
+
+                    <h3>
+                        Security Event History
+                    </h3>
+
+                    <p>
+                        Complete file integrity activity log
+                    </p>
+
+                </div>
+
+                <span id="event-count">
+                    0 events
+                </span>
+
+            </div>
+
+
+            <div class="table-container">
+
+
+                <table class="events-table">
+
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Event
+                            </th>
+
+                            <th>
+                                File
+                            </th>
+
+                            <th>
+                                Timestamp
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="events-body">
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+        </div>
+
+
+    </main>
+
+
+    <footer>
+
+        File Integrity Monitor © 2026
+
+    </footer>
+
+
+</div>
+
+
+<script>
+
+let lastEventCount = 0;
+
+
+// =========================================
+// LOAD DASHBOARD
+// =========================================
+
+async function loadDashboard() {
+
+    try {
+
+        const response = await fetch(
+            "/api/dashboard",
+            {
+                cache: "no-store"
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!data.success) {
+
+            return;
+
+        }
+
+
+        // =================================
+        // STATISTICS
+        // =================================
+
+        const statistics =
+            data.statistics;
+
+
+        document.getElementById(
+            "monitored-count"
+        ).textContent =
+            statistics.baseline_files;
+
+
+        document.getElementById(
+            "modified-count"
+        ).textContent =
+            statistics.modified;
+
+
+        document.getElementById(
+            "created-count"
+        ).textContent =
+            statistics.created;
+
+
+        document.getElementById(
+            "deleted-count"
+        ).textContent =
+            statistics.deleted;
+
+
+        // =================================
+        // EVENTS
+        // =================================
+
+        const events =
+            data.events;
+
+
+        document.getElementById(
+            "event-count"
+        ).textContent =
+            `${events.length} events`;
+
+
+        renderEvents(
+            events
+        );
+
+
+        lastEventCount =
+            events.length;
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Dashboard update error:",
+            error
+        );
+
+    }
+
+}
+
+
+// =========================================
+// RENDER EVENTS
+// =========================================
+
+function renderEvents(events) {
+
+    const body =
+        document.getElementById(
+            "events-body"
+        );
+
+
+    body.innerHTML = "";
+
+
+    if (!events.length) {
+
+        body.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="3"
+                    class="empty-events"
+                >
+                    No security events recorded yet.
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    events.forEach(
+        event => {
+
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            const type =
+                event.event_type;
+
+
+            const badge =
+                document.createElement(
+                    "span"
+                );
+
+
+            badge.className =
+                `badge ${type.toLowerCase()}`;
+
+
+            badge.textContent =
+                type;
+
+
+            const eventCell =
+                document.createElement(
+                    "td"
+                );
+
+
+            eventCell.appendChild(
+                badge
+            );
+
+
+            const fileCell =
+                document.createElement(
+                    "td"
+                );
+
+
+            fileCell.className =
+                "file-path";
+
+
+            fileCell.textContent =
+                event.file_path;
+
+
+            const timestampCell =
+                document.createElement(
+                    "td"
+                );
+
+
+            timestampCell.textContent =
+                event.timestamp;
+
+
+            row.appendChild(
+                eventCell
+            );
+
+
+            row.appendChild(
+                fileCell
+            );
+
+
+            row.appendChild(
+                timestampCell
+            );
+
+
+            body.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+// =========================================
+// LIVE UPDATE
+// =========================================
+
+loadDashboard();
+
+
+setInterval(
+    loadDashboard,
+    1000
+);
+
+</script>
+
+
+</body>
+
+</html>

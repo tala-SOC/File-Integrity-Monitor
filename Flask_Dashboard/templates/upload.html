@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>File Integrity Monitor</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================
+         NAVBAR
+         ========================================= -->
+
+    <nav class="navbar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                ◈
+            </div>
+
+            <div>
+                File Integrity Monitor
+            </div>
+
+        </div>
+
+
+        <div class="status">
+
+            <span class="status-dot"></span>
+
+            System Secure
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- =========================================
+         UPLOAD PAGE
+         ========================================= -->
+
+    <main class="upload-page">
+
+
+        <!-- INTRODUCTION -->
+
+        <section class="intro">
+
+            <span class="intro-label">
+                CYBERSECURITY TOOL
+            </span>
+
+            <h1>
+                File Integrity Monitor
+            </h1>
+
+            <h2>
+                Protect your files.
+                <span>Verify their integrity.</span>
+            </h2>
+
+            <p>
+                Analyze files using cryptographic hashing
+                and detect unauthorized modifications,
+                deletions, and integrity changes.
+            </p>
+
+        </section>
+
+
+
+        <!-- =====================================
+             UPLOAD CARD
+             ===================================== -->
+
+        <section class="upload-card">
+
+
+            <div class="upload-icon">
+                ↑
+            </div>
+
+
+            <h3>
+                Upload a File
+            </h3>
+
+
+            <p>
+                Select a file from your device to begin
+                the security analysis.
+            </p>
+
+
+
+            <!-- FILE INPUT -->
+
+            <input
+                type="file"
+                id="fileInput"
+                hidden
+            >
+
+
+
+            <!-- UPLOAD BUTTON -->
+
+            <label
+                for="fileInput"
+                class="upload-button"
+            >
+                Upload File
+            </label>
+
+
+
+            <!-- =================================
+                 FILE INFORMATION
+                 ================================= -->
+
+            <div
+                id="fileInfo"
+                class="file-info hidden"
+            >
+
+                <div class="file-icon">
+                    FILE
+                </div>
+
+
+                <div class="file-details">
+
+                    <strong id="fileName"></strong>
+
+                    <span id="fileSize"></span>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="removeFile"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+
+            <!-- =================================
+                 ANALYZE BUTTON
+                 ================================= -->
+
+            <button
+                type="button"
+                id="analyzeButton"
+                class="analyze-button"
+                disabled
+            >
+
+                Analyze File
+
+                <span>
+                    →
+                </span>
+
+            </button>
+
+
+        </section>
+
+
+
+        <!-- =====================================
+             SECURITY FEATURES
+             ===================================== -->
+
+        <section class="features">
+
+
+            <div class="feature">
+
+                <span class="feature-icon">
+                    #
+                </span>
+
+                <div>
+
+                    <strong>
+                        SHA-256
+                    </strong>
+
+                    <small>
+                        Cryptographic hashing
+                    </small>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="feature">
+
+                <span class="feature-icon">
+                    ✓
+                </span>
+
+                <div>
+
+                    <strong>
+                        Integrity Detection
+                    </strong>
+
+                    <small>
+                        Detect unauthorized changes
+                    </small>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="feature">
+
+                <span class="feature-icon">
+                    ◉
+                </span>
+
+                <div>
+
+                    <strong>
+                        Security Analysis
+                    </strong>
+
+                    <small>
+                        Generate detailed results
+                    </small>
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- =========================================
+         ANALYSIS SCREEN
+         ========================================= -->
+
+    <section
+        id="analysisSection"
+        class="analysis-section hidden"
+    >
+
+        <div class="analysis-content">
+
+
+            <div class="analysis-icon">
+
+                <div class="analysis-spinner"></div>
+
+            </div>
+
+
+            <span class="analysis-label">
+                ANALYSIS IN PROGRESS
+            </span>
+
+
+            <h2>
+                Analyzing your file
+            </h2>
+
+
+            <p>
+                File Integrity Monitor is analyzing your file
+                and extracting security metadata.
+            </p>
+
+
+
+            <!-- =================================
+                 ANALYSIS STEPS
+                 ================================= -->
+
+            <div class="analysis-card">
+
+
+                <div
+                    class="analysis-step active"
+                    id="step1"
+                >
+
+                    <div class="step-number">
+                        ✓
+                    </div>
+
+                    <div class="step-text">
+
+                        <strong>
+                            File Processing
+                        </strong>
+
+                        <span>
+                            Reading uploaded file
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <div
+                    class="analysis-step"
+                    id="step2"
+                >
+
+                    <div class="step-number">
+                        02
+                    </div>
+
+                    <div class="step-text">
+
+                        <strong>
+                            Cryptographic Hashing
+                        </strong>
+
+                        <span>
+                            Calculating file fingerprints
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <div
+                    class="analysis-step"
+                    id="step3"
+                >
+
+                    <div class="step-number">
+                        03
+                    </div>
+
+                    <div class="step-text">
+
+                        <strong>
+                            Metadata Analysis
+                        </strong>
+
+                        <span>
+                            Examining file characteristics
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <div
+                    class="analysis-step"
+                    id="step4"
+                >
+
+                    <div class="step-number">
+                        04
+                    </div>
+
+                    <div class="step-text">
+
+                        <strong>
+                            Security Report
+                        </strong>
+
+                        <span>
+                            Preparing analysis results
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         RESULT SCREEN
+         ========================================= -->
+<!-- =========================
+     PROFESSIONAL REPORT
+     ========================= -->
+
+<section
+    id="resultSection"
+    class="result-section hidden"
+>
+
+    <div class="result-content">
+
+
+        <!-- REPORT HEADER -->
+
+        <div class="report-header">
+
+            <div class="report-title-area">
+
+                <span class="result-label">
+                    ANALYSIS COMPLETE
+                </span>
+
+                <h2>
+                    File Security Report
+                </h2>
+
+                <p>
+                    Comprehensive file integrity and metadata analysis.
+                </p>
+
+            </div>
+
+
+            <div class="report-status-badge">
+
+                <span>
+                    INTEGRITY STATUS
+                </span>
+
+                <strong id="reportStatusBadge">
+                    ANALYZED
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- SECURITY STATUS -->
+
+        <div class="result-status">
+
+            <div
+                class="result-status-icon"
+                id="resultStatusIcon"
+            >
+                ✓
+            </div>
+
+            <div>
+
+                <strong id="resultStatusTitle">
+                    Integrity Analysis Complete
+                </strong>
+
+                <span id="resultStatusDescription">
+                    The file has been successfully analyzed.
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- REPORT GRID -->
+
+        <div class="report-grid">
+
+
+            <!-- =================================
+                 FILE INFORMATION
+                 ================================= -->
+
+            <div class="report-card">
+
+                <div class="report-card-header">
+
+                    <div class="report-card-icon">
+                        FILE
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            File Information
+                        </strong>
+
+                        <span>
+                            General file properties
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="report-data-row">
+
+                    <span>
+                        File Name
+                    </span>
+
+                    <strong id="resultFileName">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="report-data-row">
+
+                    <span>
+                        Extension
+                    </span>
+
+                    <strong id="resultExtension">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="report-data-row">
+
+                    <span>
+                        MIME Type
+                    </span>
+
+                    <strong id="resultMime">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="report-data-row">
+
+                    <span>
+                        File Size
+                    </span>
+
+                    <strong id="resultFileSize">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="report-data-row">
+
+                    <span>
+                        File Path
+                    </span>
+
+                    <strong id="resultFilePath">
+                        -
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================
+                 FILE SIGNATURE
+                 ================================= -->
+
+            <div class="report-card">
+
+                <div class="report-card-header">
+
+                    <div class="report-card-icon">
+                        HEX
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            File Signature
+                        </strong>
+
+                        <span>
+                            Magic byte identification
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="report-data-row">
+
+                    <span>
+                        Detected Type
+                    </span>
+
+                    <strong id="resultSignature">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="report-data-row">
+
+                    <span>
+                        Analysis
+                    </span>
+
+                    <strong>
+                        Signature inspection
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================
+                 CRYPTOGRAPHIC HASHES
+                 ================================= -->
+
+            <div class="report-card hash-card">
+
+                <div class="report-card-header">
+
+                    <div class="report-card-icon">
+                        #
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Cryptographic Integrity
+                        </strong>
+
+                        <span>
+                            File fingerprints
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="report-data-row">
+
+                    <span>
+                        MD5
+                    </span>
+
+                    <strong
+                        id="resultMD5"
+                        class="hash-value"
+                    >
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="report-data-row">
+
+                    <span>
+                        SHA-1
+                    </span>
+
+                    <strong
+                        id="resultSHA1"
+                        class="hash-value"
+                    >
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="report-data-row">
+
+                    <span>
+                        SHA-256
+                    </span>
+
+                    <strong
+                        id="resultSHA256"
+                        class="hash-value"
+                    >
+                        -
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================
+                 ENTROPY
+                 ================================= -->
+
+            <div class="report-card">
+
+                <div class="report-card-header">
+
+                    <div class="report-card-icon">
+                        ∿
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Entropy Analysis
+                        </strong>
+
+                        <span>
+                            Data randomness measurement
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="entropy-value">
+
+                    <div
+                        id="resultEntropy"
+                        class="entropy-number"
+                    >
+                        -
+                    </div>
+
+                    <div class="entropy-description">
+
+                        Higher entropy indicates
+                        greater randomness within
+                        the file data.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================
+                 TIMESTAMPS
+                 ================================= -->
+
+            <div class="report-card">
+
+                <div class="report-card-header">
+
+                    <div class="report-card-icon">
+                        ⏱
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            File Timestamps
+                        </strong>
+
+                        <span>
+                            Filesystem timestamps
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="timestamp-grid">
+
+                    <div class="timestamp-box">
+
+                        <span>
+                            Created
+                        </span>
+
+                        <strong id="resultCreated">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="timestamp-box">
+
+                        <span>
+                            Modified
+                        </span>
+
+                        <strong id="resultModified">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="timestamp-box">
+
+                        <span>
+                            Accessed
+                        </span>
+
+                        <strong id="resultAccessed">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================
+                 INTEGRITY DETECTION
+                 ================================= -->
+
+            <div class="report-card detection-card">
+
+                <div class="report-card-header">
+
+                    <div class="report-card-icon">
+                        !
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Integrity Detection
+                        </strong>
+
+                        <span>
+                            Baseline comparison result
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detection-content">
+
+                    <div
+                        class="detection-icon"
+                        id="detectionIcon"
+                    >
+                        ✓
+                    </div>
+
+                    <div class="detection-text">
+
+                        <strong id="detectionStatus">
+                            ANALYZED
+                        </strong>
+
+                        <span id="detectionDescription">
+                            No integrity changes detected.
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- NEW ANALYSIS -->
+
+        <button
+            type="button"
+            class="new-analysis-button"
+            onclick="location.reload()"
+        >
+            Analyze Another File
+        </button>
+
+
+    </div>
+
+</section>
+
+    <!-- =========================================
+         ERROR MESSAGE
+         ========================================= -->
+
+    <div
+        id="errorMessage"
+        class="hidden"
+    >
+
+        <strong>
+            Analysis Failed
+        </strong>
+
+        <span id="errorText">
+            Unable to analyze the selected file.
+        </span>
+
+        <button
+            type="button"
+            onclick="location.reload()"
+        >
+            Try Again
+        </button>
+
+    </div>
+
+
+
+    <!-- =========================================
+         FOOTER
+         ========================================= -->
+
+    <footer>
+
+        File Integrity Monitor
+
+        <span>
+            •
+        </span>
+
+        Cybersecurity Analysis Tool
+
+    </footer>
+
+
+
+    <!-- =========================================
+         JAVASCRIPT
+         ========================================= -->
+
+    <script>
+
+/* =========================================
+   ELEMENTS
+   ========================================= */
+
+const fileInput =
+    document.getElementById("fileInput");
+
+const fileInfo =
+    document.getElementById("fileInfo");
+
+const fileName =
+    document.getElementById("fileName");
+
+const fileSize =
+    document.getElementById("fileSize");
+
+const removeFile =
+    document.getElementById("removeFile");
+
+const analyzeButton =
+    document.getElementById("analyzeButton");
+
+const landingPage =
+    document.querySelector(".upload-page");
+
+const analysisSection =
+    document.getElementById("analysisSection");
+
+const resultSection =
+    document.getElementById("resultSection");
+
+const errorMessage =
+    document.getElementById("errorMessage");
+
+const errorText =
+    document.getElementById("errorText");
+
+
+/* =========================================
+   RESULT ELEMENTS
+   ========================================= */
+
+const resultFileName =
+    document.getElementById("resultFileName");
+
+const resultFileSize =
+    document.getElementById("resultFileSize");
+
+const resultExtension =
+    document.getElementById("resultExtension");
+
+const resultMime =
+    document.getElementById("resultMime");
+
+const resultSignature =
+    document.getElementById("resultSignature");
+
+const resultEntropy =
+    document.getElementById("resultEntropy");
+
+const resultStatus =
+    document.getElementById("resultStatus");
+
+const resultCreated =
+    document.getElementById("resultCreated");
+
+const resultModified =
+    document.getElementById("resultModified");
+
+const resultAccessed =
+    document.getElementById("resultAccessed");
+
+const resultMD5 =
+    document.getElementById("resultMD5");
+
+const resultSHA1 =
+    document.getElementById("resultSHA1");
+
+const resultSHA256 =
+    document.getElementById("resultSHA256");
+
+const resultIntegrityStatus =
+    document.getElementById("resultIntegrityStatus");
+
+const resultStatusMessage =
+    document.getElementById("resultStatusMessage");
+
+
+/* =========================================
+   OPTIONAL STATUS ELEMENTS
+   ========================================= */
+
+const reportStatusBadge =
+    document.getElementById("reportStatusBadge");
+
+const detectionStatus =
+    document.getElementById("detectionStatus");
+
+const resultStatusTitle =
+    document.getElementById("resultStatusTitle");
+
+const resultStatusDescription =
+    document.getElementById("resultStatusDescription");
+
+const detectionDescription =
+    document.getElementById("detectionDescription");
+
+
+/* =========================================
+   ANALYSIS STEPS
+   ========================================= */
+
+const step1 =
+    document.getElementById("step1");
+
+const step2 =
+    document.getElementById("step2");
+
+const step3 =
+    document.getElementById("step3");
+
+const step4 =
+    document.getElementById("step4");
+
+
+/* =========================================
+   FORMAT FILE SIZE
+   ========================================= */
+
+function formatFileSize(bytes) {
+
+    if (
+        bytes === undefined ||
+        bytes === null ||
+        isNaN(bytes)
+    ) {
+        return "-";
+    }
+
+    if (bytes < 1024) {
+
+        return bytes + " Bytes";
+
+    }
+
+    if (bytes < 1024 * 1024) {
+
+        return (
+            bytes / 1024
+        ).toFixed(2) + " KB";
+
+    }
+
+    if (bytes < 1024 * 1024 * 1024) {
+
+        return (
+            bytes /
+            (1024 * 1024)
+        ).toFixed(2) + " MB";
+
+    }
+
+    return (
+        bytes /
+        (1024 * 1024 * 1024)
+    ).toFixed(2) + " GB";
+
+}
+
+
+/* =========================================
+   FILE SELECTED
+   ========================================= */
+
+fileInput.addEventListener(
+    "change",
+    function () {
+
+        const file =
+            this.files[0];
+
+        if (!file) {
+
+            return;
+
+        }
+
+        fileName.textContent =
+            file.name;
+
+        fileSize.textContent =
+            formatFileSize(
+                file.size
+            );
+
+        fileInfo.classList.remove(
+            "hidden"
+        );
+
+        analyzeButton.disabled =
+            false;
+
+    }
+);
+
+
+/* =========================================
+   REMOVE FILE
+   ========================================= */
+
+removeFile.addEventListener(
+    "click",
+    function () {
+
+        fileInput.value = "";
+
+        fileInfo.classList.add(
+            "hidden"
+        );
+
+        analyzeButton.disabled =
+            true;
+
+    }
+);
+
+
+/* =========================================
+   COMPLETE ANALYSIS STEP
+   ========================================= */
+
+function completeStep(step) {
+
+    if (!step) {
+        return;
+    }
+
+    step.classList.add(
+        "active"
+    );
+
+    const number =
+        step.querySelector(
+            ".step-number"
+        );
+
+    if (number) {
+
+        number.textContent =
+            "✓";
+
+    }
+
+}
+
+
+/* =========================================
+   SHOW ERROR
+   ========================================= */
+
+function showError(message) {
+
+    if (analysisSection) {
+
+        analysisSection.classList.add(
+            "hidden"
+        );
+
+    }
+
+    if (errorMessage) {
+
+        errorMessage.classList.remove(
+            "hidden"
+        );
+
+    }
+
+    if (errorText) {
+
+        errorText.textContent =
+            message ||
+            "Unable to analyze the selected file.";
+
+    }
+
+}
+
+
+/* =========================================
+   SET TEXT SAFELY
+   ========================================= */
+
+function setText(element, value, fallback = "-") {
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent =
+        value !== undefined &&
+        value !== null &&
+        value !== ""
+            ? value
+            : fallback;
+
+}
+
+
+/* =========================================
+   UPDATE STATUS
+   ========================================= */
+
+function updateIntegrityStatus(status) {
+
+    status =
+        status ||
+        "ANALYZED";
+
+
+    /* -----------------------------------------
+       BASIC STATUS
+       ----------------------------------------- */
+
+    setText(
+        resultStatus,
+        status,
+        "ANALYZED"
+    );
+
+    setText(
+        resultIntegrityStatus,
+        status,
+        "ANALYZED"
+    );
+
+
+    /* -----------------------------------------
+       OPTIONAL STATUS BADGES
+       ----------------------------------------- */
+
+    setText(
+        reportStatusBadge,
+        status,
+        "ANALYZED"
+    );
+
+    setText(
+        detectionStatus,
+        status,
+        "ANALYZED"
+    );
+
+
+    /* -----------------------------------------
+       STATUS MESSAGES
+       ----------------------------------------- */
+
+    if (status === "CREATED") {
+
+        setText(
+            resultStatusTitle,
+            "New File Detected"
+        );
+
+        setText(
+            resultStatusDescription,
+            "A new file has been added to the monitored directory."
+        );
+
+        setText(
+            detectionDescription,
+            "The file was not present in the previous baseline and has been registered as a new file."
+        );
+
+        setText(
+            resultStatusMessage,
+            "New file detected and added to the integrity baseline."
+        );
+
+    }
+
+    else if (status === "MODIFIED") {
+
+        setText(
+            resultStatusTitle,
+            "File Modification Detected"
+        );
+
+        setText(
+            resultStatusDescription,
+            "The cryptographic fingerprint of this file has changed."
+        );
+
+        setText(
+            detectionDescription,
+            "The current SHA-256 hash differs from the stored baseline."
+        );
+
+        setText(
+            resultStatusMessage,
+            "File modification detected."
+        );
+
+    }
+
+    else if (status === "DELETED") {
+
+        setText(
+            resultStatusTitle,
+            "File Deletion Detected"
+        );
+
+        setText(
+            resultStatusDescription,
+            "The monitored file was detected as deleted."
+        );
+
+        setText(
+            detectionDescription,
+            "The file exists in the baseline but is no longer present in the monitored directory."
+        );
+
+        setText(
+            resultStatusMessage,
+            "File deletion detected."
+        );
+
+    }
+
+    else {
+
+        setText(
+            resultStatusTitle,
+            "Integrity Analysis Complete"
+        );
+
+        setText(
+            resultStatusDescription,
+            "The file has been successfully analyzed."
+        );
+
+        setText(
+            detectionDescription,
+            "No integrity changes were detected."
+        );
+
+        setText(
+            resultStatusMessage,
+            "File analyzed successfully. No integrity change detected."
+        );
+
+    }
+
+}
+
+
+/* =========================================
+   FILL REPORT
+   ========================================= */
+
+function fillReport(result) {
+
+
+    /* =========================================
+       BASIC FILE INFORMATION
+       ========================================= */
+
+    setText(
+        resultFileName,
+        result.filename
+    );
+
+    setText(
+        resultExtension,
+        result.extension
+    );
+
+    setText(
+        resultMime,
+        result.mime_type
+    );
+
+    setText(
+        resultFileSize,
+        formatFileSize(
+            result.size
+        )
+    );
+
+
+    /* =========================================
+       FILE PATH
+       ========================================= */
+
+    const resultFilePath =
+        document.getElementById(
+            "resultFilePath"
+        );
+
+    setText(
+        resultFilePath,
+        result.file_path
+    );
+
+
+    /* =========================================
+       SIGNATURE
+       ========================================= */
+
+    setText(
+        resultSignature,
+        result.signature,
+        "Unknown"
+    );
+
+
+    /* =========================================
+       HASHES
+       ========================================= */
+
+    setText(
+        resultMD5,
+        result.md5
+    );
+
+    setText(
+        resultSHA1,
+        result.sha1
+    );
+
+    setText(
+        resultSHA256,
+        result.sha256
+    );
+
+
+    /* =========================================
+       ENTROPY
+       ========================================= */
+
+    if (
+        result.entropy !== null &&
+        result.entropy !== undefined
+    ) {
+
+        setText(
+            resultEntropy,
+            result.entropy
+        );
+
+    }
+
+    else {
+
+        setText(
+            resultEntropy,
+            "-"
+        );
+
+    }
+
+
+    /* =========================================
+       TIMESTAMPS
+       ========================================= */
+
+    setText(
+        resultCreated,
+        result.created
+    );
+
+    setText(
+        resultModified,
+        result.modified
+    );
+
+    setText(
+        resultAccessed,
+        result.accessed
+    );
+
+
+    /* =========================================
+       INTEGRITY STATUS
+       ========================================= */
+
+    updateIntegrityStatus(
+        result.integrity_status
+    );
+
+}
+
+
+/* =========================================
+   ANALYZE FILE
+   ========================================= */
+
+analyzeButton.addEventListener(
+    "click",
+    async function () {
+
+        const file =
+            fileInput.files[0];
+
+
+        /* =====================================
+           CHECK FILE
+           ===================================== */
+
+        if (!file) {
+
+            return;
+
+        }
+
+
+        /* =====================================
+           DISABLE BUTTON
+           ===================================== */
+
+        analyzeButton.disabled =
+            true;
+
+
+        /* =====================================
+           HIDE LANDING PAGE
+           ===================================== */
+
+        if (landingPage) {
+
+            landingPage.classList.add(
+                "hidden"
+            );
+
+        }
+
+
+        /* =====================================
+           SHOW ANALYSIS SCREEN
+           ===================================== */
+
+        if (analysisSection) {
+
+            analysisSection.classList.remove(
+                "hidden"
+            );
+
+        }
+
+
+        /* =====================================
+           HIDE OLD ERROR
+           ===================================== */
+
+        if (errorMessage) {
+
+            errorMessage.classList.add(
+                "hidden"
+            );
+
+        }
+
+
+        /* =====================================
+           RESET STEPS
+           ===================================== */
+
+        [
+            step1,
+            step2,
+            step3,
+            step4
+        ].forEach(function (step) {
+
+            if (!step) {
+                return;
+            }
+
+            step.classList.remove(
+                "active"
+            );
+
+            const number =
+                step.querySelector(
+                    ".step-number"
+                );
+
+            if (number) {
+
+                number.textContent =
+                    step.id === "step1"
+                        ? "1"
+                        : step.id === "step2"
+                            ? "2"
+                            : step.id === "step3"
+                                ? "3"
+                                : "4";
+
+            }
+
+        });
+
+
+        /* =====================================
+           CREATE FORM DATA
+           ===================================== */
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "file",
+            file
+        );
+
+
+        try {
+
+
+            /* =================================
+               STEP 1
+               ================================= */
+
+            completeStep(
+                step1
+            );
+
+
+            /* =================================
+               SEND FILE TO FLASK
+               ================================= */
+
+            const response =
+                await fetch(
+                    "/upload",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+
+            /* =================================
+               CHECK HTTP RESPONSE
+               ================================= */
+
+            if (!response.ok) {
+
+                let errorData =
+                    null;
+
+                try {
+
+                    errorData =
+                        await response.json();
+
+                }
+
+                catch (e) {
+
+                    errorData =
+                        null;
+
+                }
+
+
+                throw new Error(
+
+                    errorData &&
+                    errorData.message
+
+                        ? errorData.message
+
+                        : "Server returned an error."
+
+                );
+
+            }
+
+
+            /* =================================
+               STEP 2
+               ================================= */
+
+            completeStep(
+                step2
+            );
+
+
+            /* =================================
+               READ JSON RESPONSE
+               ================================= */
+
+            const result =
+                await response.json();
+
+
+            console.log(
+                "Server response:",
+                result
+            );
+
+
+            /* =================================
+               CHECK SUCCESS
+               ================================= */
+
+            if (!result.success) {
+
+                throw new Error(
+
+                    result.message ||
+                    "Unable to analyze file."
+
+                );
+
+            }
+
+
+            /* =================================
+               STEP 3
+               ================================= */
+
+            completeStep(
+                step3
+            );
+
+
+            /* =================================
+               FILL REPORT
+               ================================= */
+
+            fillReport(
+                result
+            );
+
+
+            /* =================================
+               STEP 4
+               ================================= */
+
+            completeStep(
+                step4
+            );
+
+
+            /* =================================
+               SHOW RESULT
+               ================================= */
+
+            setTimeout(
+                function () {
+
+                    if (analysisSection) {
+
+                        analysisSection.classList.add(
+                            "hidden"
+                        );
+
+                    }
+
+                    if (resultSection) {
+
+                        resultSection.classList.remove(
+                            "hidden"
+                        );
+
+                    }
+
+                },
+                300
+            );
+
+
+        }
+
+        catch (error) {
+
+
+            console.error(
+                "Upload error:",
+                error
+            );
+
+
+            showError(
+                error.message
+            );
+
+
+            analyzeButton.disabled =
+                false;
+
+        }
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>
