@@ -1,63 +1,164 @@
+# 🛡️ File Integrity Monitor
 
-# File Integrity Monitor (FIM)
+**File Integrity Monitor (FIM)** is a web-based cybersecurity tool built with **Python and Flask** to analyze files, verify their integrity, detect changes, and maintain a record of file activity.
 
-A real-time file integrity monitoring system built with Python, Flask, SQLite, and Watchdog.
-
-The system monitors a designated directory for file creation, modification, and deletion events. It uses SHA-256 hashing and file baselines to detect integrity changes and records security events in a local SQLite database.
-
----
-
-## Overview
-
-File Integrity Monitoring (FIM) is a security mechanism used to detect unauthorized or unexpected changes to files.
-
-This project provides a lightweight FIM implementation capable of:
-
-- Monitoring files in real time
-- Detecting file creation
-- Detecting file modification
-- Detecting file deletion
-- Comparing SHA-256 file hashes
-- Maintaining file integrity baselines
-- Recording security events
-- Extracting detailed file metadata
-- Calculating file entropy
-- Detecting file signatures using magic bytes
-- Providing a web-based security dashboard
+The project uses **cryptographic hashing, file metadata analysis, baseline comparison, change detection, SQLite event logging, and a Flask-based web interface** to provide structured file integrity analysis and security reporting.
 
 ---
 
-## Features
+## 🚀 Features
 
-### Real-Time Monitoring
+### 📁 File Upload & Analysis
 
-The system uses the Watchdog library to monitor the target directory in real time.
+File Integrity Monitor allows users to upload a file for security and integrity analysis.
 
-It detects:
+The analyzer is designed to collect important file information, including:
 
-- `CREATED`
-- `MODIFIED`
-- `DELETED`
-
-events as they occur.
+* File name
+* File extension
+* File type
+* File size
+* Creation time
+* Modification time
+* Access time
+* Cryptographic hashes
+* File metadata
+* File structure and contents where applicable
 
 ---
 
-### File Integrity Detection
+### 🔐 Cryptographic Hashing
 
-Each monitored file is associated with a SHA-256 baseline.
+The system uses cryptographic hashes to create a unique fingerprint for files.
 
-When a file changes, its current hash is compared with the stored baseline.
+Hash comparison can be used to determine whether a file has changed since its baseline was created.
+
+The project uses:
+
+* SHA-256
+* MD5
+* SHA-512
+
+A change in the cryptographic fingerprint can indicate that the file content has been modified.
+
+---
+
+### 🧬 File Integrity Detection
+
+File Integrity Monitor compares the current state of a file against its previously recorded baseline.
+
+The system can identify events such as:
+
+* 🟢 CREATED
+* 🟠 MODIFIED
+* 🔴 DELETED
+
+This allows changes to monitored files to be tracked and recorded.
+
+---
+
+### 📊 Security Dashboard
+
+The project includes a Flask-based dashboard designed to provide an overview of file integrity events.
+
+The dashboard can display:
+
+* Monitored files
+* Modified files
+* Created files
+* Deleted files
+* Recent security events
+* File paths
+* Event timestamps
+
+---
+
+### 🗄️ Event Logging
+
+Detected file integrity events are stored in an **SQLite database**.
+
+Each event contains information such as:
+
+* Event ID
+* Event type
+* File path
+* Timestamp
+
+This allows previous integrity events to be reviewed and analyzed.
+
+---
+
+### 📋 Security Reports
+
+The project is designed to generate structured file analysis reports containing information such as:
+
+* File overview
+* File metadata
+* Creation and modification timestamps
+* Cryptographic hashes
+* Integrity status
+* Detected changes
+* File activity
+
+Reports can be used to document the results of an integrity analysis.
+
+---
+
+## 🛠️ Technologies
+
+* **Python**
+* **Flask**
+* **SQLite**
+* **Watchdog**
+* **Hashlib**
+* **HTML5**
+* **CSS3**
+* **JavaScript**
+* **Jinja2**
+
+---
+
+## 📁 Project Structure
 
 ```text
-Current File
-     |
-     v
-SHA-256 Hash
-     |
-     v
-Compare with Baseline
-     |
-     +---- Same ------> No Integrity Change
-     |
-     +---- Different -> MODIFIED
+File-Integrity-Monitor/
+│
+├── Monitoring_Engine/
+│   ├── __init__.py
+│   ├── hasher.py
+│   ├── file_scanner.py
+│   ├── watcher.py
+│   ├── baseline.py
+│   └── monitor.py
+│
+├── Detection/
+│   ├── __init__.py
+│   ├── detector.py
+│   └── events.py
+│
+├── Database/
+│   ├── __init__.py
+│   ├── database.py
+│   └── models.py
+│
+├── Flask_Dashboard/
+│   ├── main.py
+│   │
+│   ├── templates/
+│   │   ├── base.html
+│   │   ├── upload.html
+│   │   ├── loading.html
+│   │   ├── report.html
+│   │   └── dashboard.html
+│   │
+│   └── static/
+│       ├── style.css
+│       └── dashboard.js
+│
+├── monitored_files/
+├── uploads/
+├── Documentation/
+├── fim.db
+├── baseline.json
+├── requirements.txt
+└── README.md
