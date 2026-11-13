@@ -1,124 +1,121 @@
-from datetime import datetime
+
+import os
+from datetime import datetime, timezone
 
 from Database.database import (
-    get_all_baselines
+    get_all_baselines,
+    save_baseline,
+    save_event,
+    delete_baseline
 )
 
 
-# =========================================
-# CURRENT TIMESTAMP
-# =========================================
-
-def get_timestamp():
-
-    return datetime.now().strftime(
-        "%Y-%m-%d %H:%M:%S"
+def normalize_path(path):
+    """Normalize paths to make comparisons consistent."""
+    return os.path.normcase(
+        os.path.realpath(os.path.abspath(path))
     )
 
 
-# =========================================
-# DETECT FILE CHANGES
-# =========================================
+def detect_changes(current_files, user_id):
+    """
+    Compare current file hashes with the authenticated user's
+    saved baselines.
 
-def detect_changes(current_files):
+    current_files format:
+        {
+            absolute_file_path: sha256_hash
+        }
+    """
+
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    # Retrieve only this user's saved baselines.
+    saved_baselines = get_all_baselines(user_id)
+
+    baseline_map = {
+        normalize_path(item["file_path"]): item
+        for item in saved_baselines
+    }
+
+    current_map = {
+        normalize_path(path): {
+            "path": path,
+            "hash": file_hash
+        }
+        for path, file_hash in current_files.items()
+    }
 
     changes = []
 
-    current_paths = set(
-        current_files.keys()
-    )
+    # -----------------------------------------------------
+    # CREATED / MODIFIED FILES
+    # -----------------------------------------------------
 
-    baselines = get_all_baselines()
+    for normalized_path, current in current_map.items():
 
-    baseline_map = {
-        baseline["file_path"]: baseline["sha256"]
-        for baseline in baselines
-    }
+        file_path = current["path"]
+        current_hash = current["hash"]
 
-    baseline_paths = set(
-        baseline_map.keys()
-    )
+        previous = baseline_map.get(normalized_path)
 
+        if previous is None:
+            event_type = "CREATED"
 
-    # =====================================
-    # CREATED / MODIFIED
-    # =====================================
+            save_baseline(
+                file_path,
+                current_hash,
+                timestamp,
+                user_id
+            )
 
-    for file_path, current_hash in current_files.items():
-
-        file_path = os_path(file_path)
-
-        # ---------------------------------
-        # CREATED
-        # ---------------------------------
-
-        if file_path not in baseline_paths:
-
-            changes.append({
-
-                "type": "CREATED",
-
+            event = {
+                "type": event_type,
                 "file": file_path,
+                "timestamp": timestamp
+            }
 
-                "timestamp": get_timestamp()
+            save_event(event, user_id)
+            changes.append(event)
 
-            })
+        elif previous["sha256"] != current_hash:
+            event_type = "MODIFIED"
 
-            continue
+            save_baseline(
+                file_path,
+                current_hash,
+                timestamp,
+                user_id
+            )
 
-
-        # ---------------------------------
-        # MODIFIED
-        # ---------------------------------
-
-        old_hash = baseline_map[file_path]
-
-        if old_hash != current_hash:
-
-            changes.append({
-
-                "type": "MODIFIED",
-
+            event = {
+                "type": event_type,
                 "file": file_path,
+                "timestamp": timestamp
+            }
 
-                "timestamp": get_timestamp()
+            save_event(event, user_id)
+            changes.append(event)
 
-            })
+    # -----------------------------------------------------
+    # DELETED FILES
+    # -----------------------------------------------------
 
+    for normalized_path, previous in baseline_map.items():
 
-    # =====================================
-    # DELETED
-    # =====================================
+        if normalized_path not in current_map:
 
-    deleted_paths = (
-        baseline_paths -
-        current_paths
-    )
+            file_path = previous["file_path"]
 
-    for file_path in deleted_paths:
+            event = {
+                "type": "DELETED",
+                "file": file_path,
+                "timestamp": timestamp
+            }
 
-        changes.append({
+            save_event(event, user_id)
+            delete_baseline(file_path, user_id)
 
-            "type": "DELETED",
-
-            "file": file_path,
-
-            "timestamp": get_timestamp()
-
-        })
-
+            changes.append(event)
 
     return changes
-
-
-# =========================================
-# NORMALIZE PATH
-# =========================================
-
-def os_path(path):
-
-    import os
-
-    return os.path.abspath(
-        str(path)
-    )

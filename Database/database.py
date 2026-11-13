@@ -1,10 +1,12 @@
 
-import sqlite3
 import os
+import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 
-# =========================================
-# DATABASE PATH
-# =========================================
+
+# =========================================================
+# DATABASE CONFIGURATION
+# =========================================================
 
 PROJECT_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..")
@@ -16,12 +18,7 @@ DATABASE_NAME = os.environ.get(
 )
 
 
-# =========================================
-# DATABASE CONNECTION
-# =========================================
-
 def get_connection():
-
     database_directory = os.path.dirname(DATABASE_NAME)
 
     if database_directory:
@@ -31,27 +28,37 @@ def get_connection():
         DATABASE_NAME,
         timeout=10
     )
-
     connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA foreign_keys = ON")
 
     return connection
 
 
-# =========================================
-# INITIALIZE DATABASE
-# =========================================
+# =========================================================
+# DATABASE INITIALIZATION AND MIGRATION
+# =========================================================
 
 def initialize_database():
-
     connection = get_connection()
 
     try:
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        """)
+
         connection.execute("""
             CREATE TABLE IF NOT EXISTS events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 event_type TEXT NOT NULL,
                 file_path TEXT NOT NULL,
-                timestamp TEXT NOT NULL
+                timestamp TEXT NOT NULL,
+                user_id INTEGER
             )
         """)
 
@@ -60,8 +67,44 @@ def initialize_database():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 file_path TEXT UNIQUE NOT NULL,
                 sha256 TEXT NOT NULL,
-                timestamp TEXT NOT NULL
+                timestamp TEXT NOT NULL,
+                user_id INTEGER
             )
+        """)
+
+        # Add user_id to existing databases if necessary.
+        event_columns = {
+            row["name"]
+            for row in connection.execute(
+                "PRAGMA table_info(events)"
+            ).fetchall()
+        }
+
+        if "user_id" not in event_columns:
+            connection.execute(
+                "ALTER TABLE events ADD COLUMN user_id INTEGER"
+            )
+
+        baseline_columns = {
+            row["name"]
+            for row in connection.execute(
+                "PRAGMA table_info(file_baseline)"
+            ).fetchall()
+        }
+
+        if "user_id" not in baseline_columns:
+            connection.execute(
+                "ALTER TABLE file_baseline ADD COLUMN user_id INTEGER"
+            )
+
+        connection.execute("""
+            CREATE INDEX IF NOT EXISTS idx_events_user
+            ON events(user_id, id DESC)
+        """)
+
+        connection.execute("""
+            CREATE INDEX IF NOT EXISTS idx_baseline_user
+            ON file_baseline(user_id)
         """)
 
         connection.commit()
@@ -70,12 +113,94 @@ def initialize_database():
         connection.close()
 
 
-# =========================================
-# SAVE SECURITY EVENT
-# =========================================
+# =========================================================
+# USER ACCOUNT FUNCTIONS
+# =========================================================
 
-def save_event(event):
+def create_user(username, email, password):
+    connection = get_connection()
 
+    try:
+        from datetime import datetime, timezone
+
+        normalized_email = email.strip().lower()
+        normalized_username = username.strip()
+
+        password_hash = generate_password_hash(password)
+
+        cursor = connection.execute("""
+            INSERT INTO users (
+                username,
+                email,
+                password_hash,
+                created_at
+            )
+            VALUES (?, ?, ?, ?)
+        """, (
+            normalized_username,
+            normalized_email,
+            password_hash,
+            datetime.now(timezone.utc).isoformat()
+        ))
+
+        connection.commit()
+
+        return cursor.lastrowid
+
+    except sqlite3.IntegrityError:
+        return None
+
+    finally:
+        connection.close()
+
+
+def get_user_by_email(email):
+    connection = get_connection()
+
+    try:
+        user = connection.execute("""
+            SELECT id, username, email, password_hash, created_at
+            FROM users
+            WHERE email = ?
+        """, (email.strip().lower(),)).fetchone()
+
+        return dict(user) if user else None
+
+    finally:
+        connection.close()
+
+
+def get_user_by_id(user_id):
+    connection = get_connection()
+
+    try:
+        user = connection.execute("""
+            SELECT id, username, email, created_at
+            FROM users
+            WHERE id = ?
+        """, (user_id,)).fetchone()
+
+        return dict(user) if user else None
+
+    finally:
+        connection.close()
+
+
+def verify_user_password(user, password):
+    if not user:
+        return False
+
+    return check_password_hash(
+        user["password_hash"],
+        password
+    )
+
+
+# =========================================================
+# SECURITY EVENT FUNCTIONS
+# =========================================================
+
+def save_event(event, user_id):
     connection = get_connection()
 
     try:
@@ -83,13 +208,15 @@ def save_event(event):
             INSERT INTO events (
                 event_type,
                 file_path,
-                timestamp
+                timestamp,
+                user_id
             )
-            VALUES (?, ?, ?)
+            VALUES (?, ?, ?, ?)
         """, (
             event["type"],
             event["file"],
-            event["timestamp"]
+            event["timestamp"],
+            user_id
         ))
 
         connection.commit()
@@ -98,12 +225,7 @@ def save_event(event):
         connection.close()
 
 
-# =========================================
-# GET ALL SECURITY EVENTS
-# =========================================
-
-def get_events():
-
+def get_events(user_id):
     connection = get_connection()
 
     try:
@@ -114,8 +236,9 @@ def get_events():
                 file_path,
                 timestamp
             FROM events
+            WHERE user_id = ?
             ORDER BY id DESC
-        """).fetchall()
+        """, (user_id,)).fetchall()
 
         return [dict(event) for event in events]
 
@@ -123,42 +246,39 @@ def get_events():
         connection.close()
 
 
-# =========================================
-# GET EVENT STATISTICS
-# =========================================
-
-def get_event_statistics():
-
+def get_event_statistics(user_id):
     connection = get_connection()
 
     try:
         total = connection.execute("""
             SELECT COUNT(*) AS count
             FROM events
-        """).fetchone()["count"]
+            WHERE user_id = ?
+        """, (user_id,)).fetchone()["count"]
 
         created = connection.execute("""
             SELECT COUNT(*) AS count
             FROM events
-            WHERE event_type = 'CREATED'
-        """).fetchone()["count"]
+            WHERE user_id = ? AND event_type = 'CREATED'
+        """, (user_id,)).fetchone()["count"]
 
         modified = connection.execute("""
             SELECT COUNT(*) AS count
             FROM events
-            WHERE event_type = 'MODIFIED'
-        """).fetchone()["count"]
+            WHERE user_id = ? AND event_type = 'MODIFIED'
+        """, (user_id,)).fetchone()["count"]
 
         deleted = connection.execute("""
             SELECT COUNT(*) AS count
             FROM events
-            WHERE event_type = 'DELETED'
-        """).fetchone()["count"]
+            WHERE user_id = ? AND event_type = 'DELETED'
+        """, (user_id,)).fetchone()["count"]
 
         baseline_files = connection.execute("""
             SELECT COUNT(*) AS count
             FROM file_baseline
-        """).fetchone()["count"]
+            WHERE user_id = ?
+        """, (user_id,)).fetchone()["count"]
 
         return {
             "total": total,
@@ -172,26 +292,32 @@ def get_event_statistics():
         connection.close()
 
 
-# =========================================
-# SAVE FILE BASELINE
-# =========================================
+# =========================================================
+# FILE BASELINE FUNCTIONS
+# =========================================================
 
-def save_baseline(file_path, sha256, timestamp):
-
+def save_baseline(file_path, sha256, timestamp, user_id):
     connection = get_connection()
 
     try:
         connection.execute("""
-            INSERT OR REPLACE INTO file_baseline (
+            INSERT INTO file_baseline (
                 file_path,
                 sha256,
-                timestamp
+                timestamp,
+                user_id
             )
-            VALUES (?, ?, ?)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(file_path)
+            DO UPDATE SET
+                sha256 = excluded.sha256,
+                timestamp = excluded.timestamp,
+                user_id = excluded.user_id
         """, (
             file_path,
             sha256,
-            timestamp
+            timestamp,
+            user_id
         ))
 
         connection.commit()
@@ -200,23 +326,18 @@ def save_baseline(file_path, sha256, timestamp):
         connection.close()
 
 
-# =========================================
-# GET FILE BASELINE
-# =========================================
-
-def get_baseline(file_path):
-
+def get_baseline(file_path, user_id):
     connection = get_connection()
 
     try:
         baseline = connection.execute("""
-            SELECT
-                file_path,
-                sha256,
-                timestamp
+            SELECT file_path, sha256, timestamp
             FROM file_baseline
-            WHERE file_path = ?
-        """, (file_path,)).fetchone()
+            WHERE file_path = ? AND user_id = ?
+        """, (
+            file_path,
+            user_id
+        )).fetchone()
 
         return dict(baseline) if baseline else None
 
@@ -224,43 +345,34 @@ def get_baseline(file_path):
         connection.close()
 
 
-# =========================================
-# GET ALL BASELINES
-# =========================================
-
-def get_all_baselines():
-
+def get_all_baselines(user_id):
     connection = get_connection()
 
     try:
         baselines = connection.execute("""
-            SELECT
-                file_path,
-                sha256,
-                timestamp
+            SELECT file_path, sha256, timestamp
             FROM file_baseline
+            WHERE user_id = ?
             ORDER BY id DESC
-        """).fetchall()
+        """, (user_id,)).fetchall()
 
-        return [dict(baseline) for baseline in baselines]
+        return [dict(item) for item in baselines]
 
     finally:
         connection.close()
 
 
-# =========================================
-# DELETE FILE BASELINE
-# =========================================
-
-def delete_baseline(file_path):
-
+def delete_baseline(file_path, user_id):
     connection = get_connection()
 
     try:
         connection.execute("""
             DELETE FROM file_baseline
-            WHERE file_path = ?
-        """, (file_path,))
+            WHERE file_path = ? AND user_id = ?
+        """, (
+            file_path,
+            user_id
+        ))
 
         connection.commit()
 

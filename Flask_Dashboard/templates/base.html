@@ -31,7 +31,42 @@
                 <strong>FILE INTEGRITY MONITOR</strong>
                 <small>Analyze <i>·</i> Detect <i>·</i> Protect</small>
             </span>
+            {% if current_user %}
+            <div class="account-actions">
+
+    {% if current_user %}
+        <span class="account-name">
+            {{ current_user.username }}
+        </span>
+
+        <form method="POST" action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token"
+                   value="{{ csrf_token() }}">
+            <button type="submit" class="account-button">
+                Logout
+            </button>
+        </form>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="account-button">
+            Login
         </a>
+
+        <a href="{{ url_for('register') }}" class="account-button register-button">
+            Sign Up
+        </a>
+    {% endif %}
+
+            
+{% endif %}
+        </a>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <div class="fim-flash {{ category }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endwith %}
 
         <div class="system-status">
             <span class="status-dot"></span>

@@ -2709,3 +2709,91 @@ th {
     font-size: 10px;
     letter-spacing: 2px;
 }
+.user-account {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: #f1f1f1;
+}
+
+.user-account form {
+    margin: 0;
+}
+
+.user-account button {
+    background: transparent;
+    color: #ffad50;
+    border: 1px solid #a76525;
+    border-radius: 7px;
+    padding: 8px 13px;
+    cursor: pointer;
+}
+
+.user-account button:hover {
+    background: #ff9b35;
+    color: #151515;
+}
+
+.fim-flash {
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 8px;
+    background: #29231d;
+    color: #ffc17d;
+}
+
+.fim-flash.success {
+    background: #17291f;
+    color: #8ce0a7;
+}
+
+.fim-flash.error,
+.fim-flash.warning {
+    background: #302019;
+    color: #ffb08a;
+}
+
+.account-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.account-actions form {
+    margin: 0;
+}
+
+.account-name {
+    color: #f1f1f1;
+    font-size: 13px;
+}
+
+.account-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 17px;
+    border: 1px solid #ff9b35;
+    border-radius: 8px;
+    color: #ffad50;
+    background: transparent;
+    text-decoration: none;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.account-button:hover {
+    background: #ff9b35;
+    color: #151515;
+}
+
+.register-button {
+    background: #ff9b35;
+    color: #151515;
+}
+
+.register-button:hover {
+    background: #ffb45f;
+}

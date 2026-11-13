@@ -60,6 +60,7 @@
                 <span class="drop-or">or</span>
                 <span class="browse-button">Browse Files</span>
                 <span class="drop-hint">Choose a file from your device</span>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             </label>
 
             <div class="file-preview" id="file-preview" hidden>

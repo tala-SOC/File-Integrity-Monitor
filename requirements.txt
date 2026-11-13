@@ -1,3 +1,4 @@
 Flask
-watchdog
 Werkzeug
+watchdog
+Flask-WTF
