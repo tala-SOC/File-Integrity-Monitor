@@ -1,21 +1,18 @@
+
 import sqlite3
 import os
-
 
 # =========================================
 # DATABASE PATH
 # =========================================
 
 PROJECT_ROOT = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        ".."
-    )
+    os.path.join(os.path.dirname(__file__), "..")
 )
 
-DATABASE_NAME = os.path.join(
-    PROJECT_ROOT,
-    "fim.db"
+DATABASE_NAME = os.environ.get(
+    "FIM_DATABASE_PATH",
+    os.path.join(PROJECT_ROOT, "fim.db")
 )
 
 
@@ -24,6 +21,11 @@ DATABASE_NAME = os.path.join(
 # =========================================
 
 def get_connection():
+
+    database_directory = os.path.dirname(DATABASE_NAME)
+
+    if database_directory:
+        os.makedirs(database_directory, exist_ok=True)
 
     connection = sqlite3.connect(
         DATABASE_NAME,
@@ -43,36 +45,29 @@ def initialize_database():
 
     connection = get_connection()
 
-    connection.execute("""
-        CREATE TABLE IF NOT EXISTS events (
+    try:
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_type TEXT NOT NULL,
+                file_path TEXT NOT NULL,
+                timestamp TEXT NOT NULL
+            )
+        """)
 
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS file_baseline (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                file_path TEXT UNIQUE NOT NULL,
+                sha256 TEXT NOT NULL,
+                timestamp TEXT NOT NULL
+            )
+        """)
 
-            event_type TEXT NOT NULL,
+        connection.commit()
 
-            file_path TEXT NOT NULL,
-
-            timestamp TEXT NOT NULL
-
-        )
-    """)
-
-    connection.execute("""
-        CREATE TABLE IF NOT EXISTS file_baseline (
-
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-            file_path TEXT UNIQUE NOT NULL,
-
-            sha256 TEXT NOT NULL,
-
-            timestamp TEXT NOT NULL
-
-        )
-    """)
-
-    connection.commit()
-    connection.close()
+    finally:
+        connection.close()
 
 
 # =========================================
@@ -83,22 +78,24 @@ def save_event(event):
 
     connection = get_connection()
 
-    connection.execute("""
-        INSERT INTO events (
-            event_type,
-            file_path,
-            timestamp
-        )
+    try:
+        connection.execute("""
+            INSERT INTO events (
+                event_type,
+                file_path,
+                timestamp
+            )
+            VALUES (?, ?, ?)
+        """, (
+            event["type"],
+            event["file"],
+            event["timestamp"]
+        ))
 
-        VALUES (?, ?, ?)
-    """, (
-        event["type"],
-        event["file"],
-        event["timestamp"]
-    ))
+        connection.commit()
 
-    connection.commit()
-    connection.close()
+    finally:
+        connection.close()
 
 
 # =========================================
@@ -109,24 +106,21 @@ def get_events():
 
     connection = get_connection()
 
-    events = connection.execute("""
-        SELECT
-            id,
-            event_type,
-            file_path,
-            timestamp
+    try:
+        events = connection.execute("""
+            SELECT
+                id,
+                event_type,
+                file_path,
+                timestamp
+            FROM events
+            ORDER BY id DESC
+        """).fetchall()
 
-        FROM events
+        return [dict(event) for event in events]
 
-        ORDER BY id DESC
-    """).fetchall()
-
-    connection.close()
-
-    return [
-        dict(event)
-        for event in events
-    ]
+    finally:
+        connection.close()
 
 
 # =========================================
@@ -137,79 +131,73 @@ def get_event_statistics():
 
     connection = get_connection()
 
-    total = connection.execute("""
-        SELECT COUNT(*) AS count
-        FROM events
-    """).fetchone()["count"]
+    try:
+        total = connection.execute("""
+            SELECT COUNT(*) AS count
+            FROM events
+        """).fetchone()["count"]
 
-    created = connection.execute("""
-        SELECT COUNT(*) AS count
-        FROM events
-        WHERE event_type = 'CREATED'
-    """).fetchone()["count"]
+        created = connection.execute("""
+            SELECT COUNT(*) AS count
+            FROM events
+            WHERE event_type = 'CREATED'
+        """).fetchone()["count"]
 
-    modified = connection.execute("""
-        SELECT COUNT(*) AS count
-        FROM events
-        WHERE event_type = 'MODIFIED'
-    """).fetchone()["count"]
+        modified = connection.execute("""
+            SELECT COUNT(*) AS count
+            FROM events
+            WHERE event_type = 'MODIFIED'
+        """).fetchone()["count"]
 
-    deleted = connection.execute("""
-        SELECT COUNT(*) AS count
-        FROM events
-        WHERE event_type = 'DELETED'
-    """).fetchone()["count"]
+        deleted = connection.execute("""
+            SELECT COUNT(*) AS count
+            FROM events
+            WHERE event_type = 'DELETED'
+        """).fetchone()["count"]
 
-    baseline_files = connection.execute("""
-        SELECT COUNT(*) AS count
-        FROM file_baseline
-    """).fetchone()["count"]
+        baseline_files = connection.execute("""
+            SELECT COUNT(*) AS count
+            FROM file_baseline
+        """).fetchone()["count"]
 
-    connection.close()
+        return {
+            "total": total,
+            "created": created,
+            "modified": modified,
+            "deleted": deleted,
+            "baseline_files": baseline_files
+        }
 
-    return {
-
-        "total": total,
-
-        "created": created,
-
-        "modified": modified,
-
-        "deleted": deleted,
-
-        "baseline_files": baseline_files
-
-    }
+    finally:
+        connection.close()
 
 
 # =========================================
 # SAVE FILE BASELINE
 # =========================================
 
-def save_baseline(
-    file_path,
-    sha256,
-    timestamp
-):
+def save_baseline(file_path, sha256, timestamp):
 
     connection = get_connection()
 
-    connection.execute("""
-        INSERT OR REPLACE INTO file_baseline (
+    try:
+        connection.execute("""
+            INSERT OR REPLACE INTO file_baseline (
+                file_path,
+                sha256,
+                timestamp
+            )
+            VALUES (?, ?, ?)
+        """, (
             file_path,
             sha256,
             timestamp
-        )
+        ))
 
-        VALUES (?, ?, ?)
-    """, (
-        file_path,
-        sha256,
-        timestamp
-    ))
+        connection.commit()
 
-    connection.commit()
-    connection.close()
+    finally:
+        connection.close()
 
 
 # =========================================
@@ -220,25 +208,20 @@ def get_baseline(file_path):
 
     connection = get_connection()
 
-    baseline = connection.execute("""
-        SELECT
-            file_path,
-            sha256,
-            timestamp
+    try:
+        baseline = connection.execute("""
+            SELECT
+                file_path,
+                sha256,
+                timestamp
+            FROM file_baseline
+            WHERE file_path = ?
+        """, (file_path,)).fetchone()
 
-        FROM file_baseline
+        return dict(baseline) if baseline else None
 
-        WHERE file_path = ?
-    """, (
-        file_path,
-    )).fetchone()
-
-    connection.close()
-
-    if baseline is None:
-        return None
-
-    return dict(baseline)
+    finally:
+        connection.close()
 
 
 # =========================================
@@ -249,23 +232,20 @@ def get_all_baselines():
 
     connection = get_connection()
 
-    baselines = connection.execute("""
-        SELECT
-            file_path,
-            sha256,
-            timestamp
+    try:
+        baselines = connection.execute("""
+            SELECT
+                file_path,
+                sha256,
+                timestamp
+            FROM file_baseline
+            ORDER BY id DESC
+        """).fetchall()
 
-        FROM file_baseline
+        return [dict(baseline) for baseline in baselines]
 
-        ORDER BY id DESC
-    """).fetchall()
-
-    connection.close()
-
-    return [
-        dict(baseline)
-        for baseline in baselines
-    ]
+    finally:
+        connection.close()
 
 
 # =========================================
@@ -276,12 +256,13 @@ def delete_baseline(file_path):
 
     connection = get_connection()
 
-    connection.execute("""
-        DELETE FROM file_baseline
-        WHERE file_path = ?
-    """, (
-        file_path,
-    ))
+    try:
+        connection.execute("""
+            DELETE FROM file_baseline
+            WHERE file_path = ?
+        """, (file_path,))
 
-    connection.commit()
-    connection.close()
+        connection.commit()
+
+    finally:
+        connection.close()

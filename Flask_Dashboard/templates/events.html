@@ -1,0 +1,180 @@
+
+{% extends "base.html" %}
+
+{% block title %}Security Events | FIM{% endblock %}
+
+{% block content %}
+<section class="fim-page">
+
+    <header class="fim-heading">
+        <span class="fim-eyebrow">EVENT LOG</span>
+        <h1>Security Events</h1>
+        <p class="fim-subtitle">
+            Review recorded file creation, modification, and deletion events.
+        </p>
+    </header>
+
+    <section class="fim-panel">
+        <div class="fim-panel-header">
+            <div>
+                <span class="fim-eyebrow">ACTIVITY RECORDS</span>
+                <h2>Recorded Events</h2>
+            </div>
+
+            <button type="button" class="fim-button" id="refresh-events">
+                ↻ Refresh
+            </button>
+        </div>
+
+        <div class="fim-events-summary">
+            <div>
+                <span class="fim-card-label">Total Events</span>
+                <strong class="fim-summary-value" id="total-events">—</strong>
+            </div>
+
+            <div>
+                <span class="fim-card-label">Last Updated</span>
+                <strong class="fim-summary-time" id="events-updated">Not yet</strong>
+            </div>
+        </div>
+
+        <p id="events-message" class="fim-message" role="status"
+           aria-live="polite">Loading security events...</p>
+
+        <div class="fim-table-wrap">
+            <table class="fim-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Event Type</th>
+                        <th>File Path</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+
+                <tbody id="all-events-body">
+                    <tr>
+                        <td colspan="4" class="fim-empty">
+                            Loading events...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="fim-panel-footer">
+            <span id="events-count-label">Waiting for data...</span>
+            <a href="{{ url_for('dashboard') }}" class="fim-text-link">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </section>
+</section>
+
+<script>
+(() => {
+    const body = document.getElementById("all-events-body");
+    const refreshButton = document.getElementById("refresh-events");
+    const message = document.getElementById("events-message");
+    const total = document.getElementById("total-events");
+    const updated = document.getElementById("events-updated");
+    const countLabel = document.getElementById("events-count-label");
+
+    let refreshing = false;
+
+    function addCell(row, value) {
+        const cell = document.createElement("td");
+        cell.textContent = value ?? "—";
+        row.appendChild(cell);
+        return cell;
+    }
+
+    function showMessage(text, isError = false) {
+        message.textContent = text;
+        message.className = isError
+            ? "fim-message fim-message-error"
+            : "fim-message";
+    }
+
+    function renderEvents(events) {
+        body.replaceChildren();
+        total.textContent = events.length;
+
+        if (!events.length) {
+            const row = document.createElement("tr");
+            const cell = addCell(row, "No security events have been recorded yet.");
+            cell.colSpan = 4;
+            cell.className = "fim-empty";
+            body.appendChild(row);
+            countLabel.textContent = "0 recorded events";
+            return;
+        }
+
+        for (const event of events) {
+            const row = document.createElement("tr");
+            addCell(row, event.id ?? "—");
+
+            const type = event.event_type || "UNKNOWN";
+            const typeCell = addCell(row, "");
+            const badge = document.createElement("span");
+
+            badge.className =
+                "fim-badge " + String(type).toLowerCase();
+            badge.textContent = type;
+            typeCell.appendChild(badge);
+
+            addCell(row, event.file_path || "—");
+            addCell(row, event.timestamp || "—");
+
+            body.appendChild(row);
+        }
+
+        countLabel.textContent = `Displaying ${events.length} recorded event(s)`;
+    }
+
+    async function refreshEvents() {
+        if (refreshing) return;
+        refreshing = true;
+
+        refreshButton.disabled = true;
+        refreshButton.textContent = "↻ Refreshing...";
+
+        try {
+            const response = await fetch(
+                "{{ url_for('events_api') }}",
+                {
+                    headers: { "Accept": "application/json" },
+                    cache: "no-store"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Events request failed");
+            }
+
+            const data = await response.json();
+
+            if (!data.success || !Array.isArray(data.events)) {
+                throw new Error(data.message || "Invalid events response");
+            }
+
+            renderEvents(data.events);
+            updated.textContent = new Date().toLocaleTimeString();
+            showMessage("Event log synchronized successfully.");
+        } catch (error) {
+            showMessage(
+                "Unable to retrieve events. Check the server and try again.",
+                true
+            );
+        } finally {
+            refreshing = false;
+            refreshButton.disabled = false;
+            refreshButton.textContent = "↻ Refresh";
+        }
+    }
+
+    refreshButton.addEventListener("click", refreshEvents);
+    refreshEvents();
+})();
+</script>
+{% endblock %}

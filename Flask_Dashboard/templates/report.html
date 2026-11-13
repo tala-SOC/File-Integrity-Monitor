@@ -1,86 +1,125 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis Report - File Integrity Monitor</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        .report-card {
-            background: #141A22;
-            border: 1px solid #252D38;
-            border-radius: 12px;
-            padding: 25px;
-            margin-top: 20px;
-        }
-        .report-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #252D38;
-        }
-        .report-row:last-child {
-            border-bottom: none;
-        }
-        .hash-code {
-            font-family: monospace;
-            background: #10161F;
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: #F97316;
-            word-break: break-all;
-        }
-        .print-btn {
-            background: #252D38;
-            color: #FFF;
-            padding: 10px 20px;
-            border: 1px solid #374151;
-            border-radius: 6px;
-            cursor: pointer;
-            float: right;
-        }
-        .print-btn:hover { background: #374151; }
-        
-        @media print {
-            .navbar, .print-btn, footer { display: none !important; }
-            body { background: #FFF; color: #000; }
-            .report-card { border: 1px solid #000; background: #FFF; color: #000; }
-            .hash-code { background: #EEE; color: #000; }
-        }
-    </style>
-</head>
-<body>
-    <div class="page">
-        <nav class="navbar">
-            <div class="logo">
-                <div class="logo-box">FIM</div>
-                <div class="logo-text"><h1>File Integrity Monitor</h1></div>
-            </div>
-        </nav>
 
-        <main class="main-content">
-            <button onclick="window.print()" class="print-btn">🖨️ Print Report</button>
-            <h2 style="margin-bottom: 20px;">Analysis Report</h2>
+{% extends "base.html" %}
 
-            <div class="report-card">
-                <div class="report-row">
-                    <span>File Name:</span>
-                    <strong>{{ filename }}</strong>
-                </div>
-                <div class="report-row">
-                    <span>File Size:</span>
-                    <strong>{{ filesize }}</strong>
-                </div>
-                <div class="report-row">
-                    <span>SHA-256 Hash:</span>
-                    <span class="hash-code">{{ file_hash }}</span>
-                </div>
-                <div class="report-row">
-                    <span>Status:</span>
-                    <strong style="color: #10B981;">Integrity Verified</strong>
-                </div>
+{% block title %}Security Analysis Report | File Integrity Monitor{% endblock %}
+
+{% block content %}
+<section class="report-page">
+
+    <header class="report-heading">
+        <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            SECURITY ANALYSIS COMPLETE
+        </div>
+        <h1>File Analysis <span>Report.</span></h1>
+        <p class="hero-description">
+            Your file has been processed. Review its metadata and cryptographic fingerprint below.
+        </p>
+    </header>
+
+    <section class="upload-card report-card">
+        <div class="card-corner corner-tl"></div>
+        <div class="card-corner corner-tr"></div>
+        <div class="card-corner corner-bl"></div>
+        <div class="card-corner corner-br"></div>
+
+        <div class="card-heading">
+            <div>
+                <span class="section-kicker">01 / ANALYSIS RESULT</span>
+                <h2>Analysis Summary</h2>
+                <p>Current file details and integrity information.</p>
             </div>
-        </main>
+            <div class="card-shield" aria-hidden="true">⛨</div>
+        </div>
+
+        <div class="report-status">
+            <span class="report-status-icon">✓</span>
+            <div>
+                <span class="section-kicker">PROCESSING STATUS</span>
+                <strong>Analysis Completed</strong>
+                <p>{{ integrity_status }}</p>
+            </div>
+        </div>
+
+        <div class="report-section-title">
+            <span class="section-kicker">02 / FILE INTELLIGENCE</span>
+            <h3>File Information</h3>
+        </div>
+
+        <div class="report-info-grid">
+            <article class="report-info">
+                <span>FILE NAME</span>
+                <strong>{{ filename }}</strong>
+            </article>
+
+            <article class="report-info">
+                <span>FILE SIZE</span>
+                <strong>{{ filesize }}</strong>
+            </article>
+
+            <article class="report-info">
+                <span>FILE EXTENSION</span>
+                <strong>{{ metadata.get("extension", "Unavailable") }}</strong>
+            </article>
+
+            <article class="report-info">
+                <span>MIME TYPE</span>
+                <strong>{{ metadata.get("mime_type", "Unavailable") }}</strong>
+            </article>
+        </div>
+
+        <div class="report-section-title hash-title">
+            <span class="section-kicker">03 / CRYPTOGRAPHIC FINGERPRINT</span>
+            <h3>SHA-256 Hash</h3>
+            <p>This fingerprint represents the analyzed file content.</p>
+        </div>
+
+        <div class="report-hash-wrap">
+            <code class="report-hash">{{ file_hash }}</code>
+            <button type="button" class="copy-hash-button"
+                    id="copy-hash-button">Copy Hash</button>
+        </div>
+
+        <div class="report-note">
+            <span>ⓘ</span>
+            <p>A SHA-256 hash helps identify file content. By itself, it does not prove that a file is safe or unchanged; comparison with a trusted baseline is needed to verify integrity.</p>
+        </div>
+
+        <div class="report-actions">
+            <a href="/" class="analyze-button report-back">
+                <span>↑</span>
+                <span>Analyze Another File</span>
+                <span class="button-arrow">→</span>
+            </a>
+            <button type="button" class="report-print" onclick="window.print()">
+                Print Report
+            </button>
+        </div>
+    </section>
+
+    <div class="hero-footnote">
+        <span class="footnote-line"></span>
+        <span>FILE INTELLIGENCE <i>·</i> INTEGRITY VERIFICATION <i>·</i> SECURITY INSIGHTS</span>
+        <span class="footnote-line"></span>
     </div>
-</body>
-</html>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const copyButton = document.getElementById("copy-hash-button");
+    const hashElement = document.querySelector(".report-hash");
+
+    if (copyButton && hashElement) {
+        copyButton.addEventListener("click", async function () {
+            try {
+                await navigator.clipboard.writeText(hashElement.textContent.trim());
+                copyButton.textContent = "Copied!";
+                setTimeout(() => copyButton.textContent = "Copy Hash", 1600);
+            } catch (error) {
+                copyButton.textContent = "Copy unavailable";
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

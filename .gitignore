@@ -1,0 +1,13 @@
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded and monitored files
+monitored_files/*
+!monitored_files/.gitkeep
+
+# Python cache
+__pycache__/
+*.pyc

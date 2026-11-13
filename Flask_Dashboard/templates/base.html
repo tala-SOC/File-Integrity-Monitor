@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}File Integrity Monitor{% endblock %}</title>
+    <meta name="theme-color" content="#080a0e">
+    <meta name="description" content="Analyze files, monitor integrity, and detect unauthorized changes.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='dashboard.js') }}" defer></script>
+</head>
+<body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="cyber-grid"></div>
+    <div class="scanline"></div>
+    <div class="particles" id="particles" aria-hidden="true"></div>
+
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('home') }}">
+            <span class="brand-shield">
+                <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                    <path d="M24 4L41 11V23C41 33 34 40 24 44C14 40 7 33 7 23V11L24 4Z"
+                          stroke="currentColor" stroke-width="2.8"/>
+                    <path d="M16 24L21 29L32 17" stroke="currentColor"
+                          stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+            <span class="brand-copy">
+                <strong>FILE INTEGRITY MONITOR</strong>
+                <small>Analyze <i>·</i> Detect <i>·</i> Protect</small>
+            </span>
+        </a>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            <span>System Ready</span>
+        </div>
+
+        <div class="top-shield" aria-hidden="true">⛨</div>
+    </header>
+
+    <div class="app-layout">
+
+<aside class="sidebar">
+    <div class="sidebar-label">WORKSPACE</div>
+
+    <nav class="side-nav" aria-label="Main navigation">
+        <a href="/" class="nav-link {% if request.endpoint in ['home', 'upload_file'] %}active{% endif %}">
+            <span class="nav-icon">⇧</span>
+            <span>Upload / Analyze</span>
+        </a>
+
+        <a href="/dashboard" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+            <span class="nav-icon">▦</span>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="/events" class="nav-link {% if request.endpoint == 'events' %}active{% endif %}">
+            <span class="nav-icon">≡</span>
+            <span>Events</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <span class="mini-shield">⛨</span>
+        <span>File Integrity<br><strong>is Security</strong></span>
+    </div>
+</aside>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <div class="analysis-loader" id="analysis-loader"
+         role="status" aria-live="polite" aria-hidden="true">
+        <div class="loader-orbit orbit-a"></div>
+        <div class="loader-orbit orbit-b"></div>
+        <div class="loader-shield">⛨</div>
+        <div class="loader-kicker">FILE INTEGRITY MONITOR</div>
+        <h2>Analyzing Your File<span class="loader-dots"></span></h2>
+        <p>Inspecting metadata and generating cryptographic fingerprints.</p>
+        <div class="loader-track"><span></span></div>
+        <div class="loader-status">
+            <span class="status-dot"></span> SECURE ANALYSIS IN PROGRESS
+        </div>
+    </div>
+
+    <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("upload-form");
+        const loader = document.getElementById("analysis-loader");
+        const button = document.getElementById("analyze-button");
+
+        if (!form || !loader) return;
+
+        form.addEventListener("submit", function (event) {
+            const fileInput = document.getElementById("file");
+
+            if (!fileInput || !fileInput.files || !fileInput.files.length) {
+                return;
+            }
+
+            loader.classList.add("is-visible");
+            loader.setAttribute("aria-hidden", "false");
+
+            if (button) {
+                button.disabled = true;
+                button.classList.add("is-loading");
+
+                const label = button.querySelector("span:nth-child(2)");
+                if (label) label.textContent = "Analyzing...";
+            }
+        });
+    });
+    </script>
+</body>
+</html>

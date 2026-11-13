@@ -1,534 +1,225 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
+{% extends "base.html" %}
 
-    <meta charset="UTF-8">
+{% block title %}Security Dashboard | FIM{% endblock %}
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+{% block content %}
+<section class="fim-page">
 
-    <title>
-        Dashboard | File Integrity Monitor
-    </title>
+    <header class="fim-heading">
+        <span class="fim-eyebrow">MONITORING CENTER</span>
+        <h1>Security Dashboard</h1>
+        <p class="fim-subtitle">
+            Monitor file activity and review recorded security events in real time.
+        </p>
+    </header>
 
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com"
-    >
-
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin
-    >
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
-    >
-
-</head>
-
-
-<body>
-
-<div class="page">
-
-
-    <!-- ================================= -->
-    <!-- NAVBAR -->
-    <!-- ================================= -->
-
-    <nav class="navbar">
-
-        <div class="logo">
-
-            <div class="logo-box">
-                FIM
-            </div>
-
-            <div class="logo-text">
-
-                <h1>
-                    File Integrity Monitor
-                </h1>
-
-                <span>
-                    Cybersecurity Dashboard
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <div class="status">
-
+    <div class="fim-toolbar">
+        <div class="fim-live-indicator">
             <span class="status-dot"></span>
-
-            System Protected
-
+            <span id="dashboard-status">Connecting to monitor...</span>
         </div>
 
-    </nav>
+        <button type="button" class="fim-button" id="refresh-dashboard">
+            ↻ Refresh
+        </button>
+    </div>
 
+    <section class="fim-grid" aria-label="Event statistics">
+        <article class="fim-card">
+            <span class="fim-card-icon">▤</span>
+            <span class="fim-card-label">Baseline Files</span>
+            <strong class="fim-card-value" id="monitored-count">—</strong>
+            <span class="fim-card-note">Tracked by the database</span>
+        </article>
 
-    <!-- ================================= -->
-    <!-- MAIN -->
-    <!-- ================================= -->
+        <article class="fim-card">
+            <span class="fim-card-icon">↻</span>
+            <span class="fim-card-label">Modified Events</span>
+            <strong class="fim-card-value" id="modified-count">—</strong>
+            <span class="fim-card-note">Recorded modifications</span>
+        </article>
 
-    <main class="main-content">
+        <article class="fim-card">
+            <span class="fim-card-icon">＋</span>
+            <span class="fim-card-label">Created Events</span>
+            <strong class="fim-card-value" id="created-count">—</strong>
+            <span class="fim-card-note">Recorded creations</span>
+        </article>
 
+        <article class="fim-card">
+            <span class="fim-card-icon">−</span>
+            <span class="fim-card-label">Deleted Events</span>
+            <strong class="fim-card-value" id="deleted-count">—</strong>
+            <span class="fim-card-note">Recorded deletions</span>
+        </article>
+    </section>
 
-        <div class="dashboard-header">
-
+    <section class="fim-panel">
+        <div class="fim-panel-header">
             <div>
-
-                <h2>
-                    Security Dashboard
-                </h2>
-
-                <p>
-                    Monitor file integrity and detect unauthorized changes.
-                </p>
-
+                <span class="fim-eyebrow">LIVE ACTIVITY</span>
+                <h2>Recent Security Events</h2>
             </div>
 
-            <div class="live-indicator">
-
-                <span></span>
-
-                LIVE MONITORING
-
-            </div>
-
+            <a href="{{ url_for('events') }}" class="fim-button">
+                View All Events →
+            </a>
         </div>
 
-
-        <!-- ================================= -->
-        <!-- STATISTICS -->
-        <!-- ================================= -->
-
-        <div class="stats-grid">
-
-
-            <div class="stat-card">
-
-                <div class="stat-icon">
-                    📁
-                </div>
-
-                <div class="stat-info">
-
-                    <span>
-                        Monitored Files
-                    </span>
-
-                    <h3 id="monitored-count">
-                        0
-                    </h3>
-
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-icon warning">
-                    ✏️
-                </div>
-
-                <div class="stat-info">
-
-                    <span>
-                        Modified
-                    </span>
-
-                    <h3 id="modified-count">
-                        0
-                    </h3>
-
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-icon success">
-                    ➕
-                </div>
-
-                <div class="stat-info">
-
-                    <span>
-                        Created
-                    </span>
-
-                    <h3 id="created-count">
-                        0
-                    </h3>
-
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-icon danger">
-                    🗑️
-                </div>
-
-                <div class="stat-info">
-
-                    <span>
-                        Deleted
-                    </span>
-
-                    <h3 id="deleted-count">
-                        0
-                    </h3>
-
-                </div>
-
-            </div>
-
-
+        <div class="fim-table-wrap">
+            <table class="fim-table">
+                <thead>
+                    <tr>
+                        <th>Event Type</th>
+                        <th>File Path</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="events-body">
+                    <tr>
+                        <td colspan="3" class="fim-empty">Loading events...</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-
-        <!-- ================================= -->
-        <!-- EVENTS -->
-        <!-- ================================= -->
-
-        <div class="events-section">
-
-
-            <div class="events-header">
-
-                <div>
-
-                    <h3>
-                        Security Event History
-                    </h3>
-
-                    <p>
-                        Complete file integrity activity log
-                    </p>
-
-                </div>
-
-                <span id="event-count">
-                    0 events
-                </span>
-
-            </div>
-
-
-            <div class="table-container">
-
-
-                <table class="events-table">
-
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Event
-                            </th>
-
-                            <th>
-                                File
-                            </th>
-
-                            <th>
-                                Timestamp
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody id="events-body">
-
-                    </tbody>
-
-
-                </table>
-
-
-            </div>
-
-
+        <div class="fim-panel-footer">
+            <span id="event-count">Waiting for data...</span>
+            <span>Auto-refresh: 5 seconds</span>
         </div>
+    </section>
 
-
-    </main>
-
-
-    <footer>
-
-        File Integrity Monitor © 2026
-
-    </footer>
-
-
-</div>
-
+    <p id="dashboard-error" class="fim-message" role="status" aria-live="polite"></p>
+</section>
 
 <script>
+(() => {
+    const byId = id => document.getElementById(id);
+    const body = byId("events-body");
+    const refreshButton = byId("refresh-dashboard");
+    const errorBox = byId("dashboard-error");
+    const statusText = byId("dashboard-status");
+    const eventCount = byId("event-count");
 
-let lastEventCount = 0;
+    let refreshing = false;
 
+    function addCell(row, value) {
+        const cell = document.createElement("td");
+        cell.textContent = value ?? "—";
+        row.appendChild(cell);
+        return cell;
+    }
 
-// =========================================
-// LOAD DASHBOARD
-// =========================================
+    function showEmpty(message) {
+        body.replaceChildren();
 
-async function loadDashboard() {
+        const row = document.createElement("tr");
+        const cell = addCell(row, message);
+        cell.colSpan = 3;
+        cell.className = "fim-empty";
 
-    try {
+        body.appendChild(row);
+    }
 
-        const response = await fetch(
-            "/api/dashboard",
-            {
-                cache: "no-store"
-            }
-        );
+    function renderEvents(events) {
+        body.replaceChildren();
 
-
-        const data = await response.json();
-
-
-        if (!data.success) {
-
+        if (!events.length) {
+            showEmpty("No security events have been recorded yet.");
+            eventCount.textContent = "0 recent events";
             return;
-
         }
 
-
-        // =================================
-        // STATISTICS
-        // =================================
-
-        const statistics =
-            data.statistics;
-
-
-        document.getElementById(
-            "monitored-count"
-        ).textContent =
-            statistics.baseline_files;
-
-
-        document.getElementById(
-            "modified-count"
-        ).textContent =
-            statistics.modified;
-
-
-        document.getElementById(
-            "created-count"
-        ).textContent =
-            statistics.created;
-
-
-        document.getElementById(
-            "deleted-count"
-        ).textContent =
-            statistics.deleted;
-
-
-        // =================================
-        // EVENTS
-        // =================================
-
-        const events =
-            data.events;
-
-
-        document.getElementById(
-            "event-count"
-        ).textContent =
-            `${events.length} events`;
-
-
-        renderEvents(
-            events
-        );
-
-
-        lastEventCount =
-            events.length;
-
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Dashboard update error:",
-            error
-        );
-
-    }
-
-}
-
-
-// =========================================
-// RENDER EVENTS
-// =========================================
-
-function renderEvents(events) {
-
-    const body =
-        document.getElementById(
-            "events-body"
-        );
-
-
-    body.innerHTML = "";
-
-
-    if (!events.length) {
-
-        body.innerHTML = `
-
-            <tr>
-
-                <td
-                    colspan="3"
-                    class="empty-events"
-                >
-                    No security events recorded yet.
-                </td>
-
-            </tr>
-
-        `;
-
-        return;
-
-    }
-
-
-    events.forEach(
-        event => {
-
-
-            const row =
-                document.createElement(
-                    "tr"
-                );
-
-
-            const type =
-                event.event_type;
-
-
-            const badge =
-                document.createElement(
-                    "span"
-                );
-
-
-            badge.className =
-                `badge ${type.toLowerCase()}`;
-
-
-            badge.textContent =
-                type;
-
-
-            const eventCell =
-                document.createElement(
-                    "td"
-                );
-
-
-            eventCell.appendChild(
-                badge
-            );
-
-
-            const fileCell =
-                document.createElement(
-                    "td"
-                );
-
-
-            fileCell.className =
-                "file-path";
-
-
-            fileCell.textContent =
-                event.file_path;
-
-
-            const timestampCell =
-                document.createElement(
-                    "td"
-                );
-
-
-            timestampCell.textContent =
-                event.timestamp;
-
-
-            row.appendChild(
-                eventCell
-            );
-
-
-            row.appendChild(
-                fileCell
-            );
-
-
-            row.appendChild(
-                timestampCell
-            );
-
-
-            body.appendChild(
-                row
-            );
-
+        for (const event of events.slice(0, 10)) {
+            const row = document.createElement("tr");
+            const type = event.event_type || "UNKNOWN";
+
+            const typeCell = addCell(row, "");
+            const badge = document.createElement("span");
+            badge.className = "fim-badge " +
+                String(type).toLowerCase();
+            badge.textContent = type;
+            typeCell.appendChild(badge);
+
+            addCell(row, event.file_path || "—");
+            addCell(row, event.timestamp || "—");
+
+            body.appendChild(row);
         }
-    );
 
-}
+        eventCount.textContent =
+            `Showing ${Math.min(events.length, 10)} recent event(s)`;
+    }
 
+    async function refreshDashboard() {
+        if (refreshing) return;
+        refreshing = true;
 
-// =========================================
-// LIVE UPDATE
-// =========================================
+        if (refreshButton) {
+            refreshButton.disabled = true;
+            refreshButton.textContent = "↻ Refreshing...";
+        }
 
-loadDashboard();
+        try {
+            const response = await fetch(
+                "{{ url_for('dashboard_data') }}",
+                {
+                    headers: { "Accept": "application/json" },
+                    cache: "no-store"
+                }
+            );
 
+            if (!response.ok) {
+                throw new Error("Dashboard request failed");
+            }
 
-setInterval(
-    loadDashboard,
-    1000
-);
+            const data = await response.json();
 
+            if (!data.success) {
+                throw new Error(data.message || "Unable to load dashboard data");
+            }
+
+            const stats = data.statistics || {};
+
+            byId("monitored-count").textContent =
+                stats.baseline_files ?? 0;
+            byId("modified-count").textContent =
+                stats.modified ?? 0;
+            byId("created-count").textContent =
+                stats.created ?? 0;
+            byId("deleted-count").textContent =
+                stats.deleted ?? 0;
+
+            const events = Array.isArray(data.events) ? data.events : [];
+            renderEvents(events);
+
+            statusText.textContent = "Monitor connected";
+            errorBox.textContent = "";
+            errorBox.className = "fim-message";
+        } catch (error) {
+            statusText.textContent = "Connection issue";
+            errorBox.textContent =
+                "Unable to refresh dashboard. Check the server connection.";
+            errorBox.className = "fim-message fim-message-error";
+
+            if (!body.children.length) {
+                showEmpty("Unable to load events. Please try again.");
+            }
+        } finally {
+            refreshing = false;
+
+            if (refreshButton) {
+                refreshButton.disabled = false;
+                refreshButton.textContent = "↻ Refresh";
+            }
+        }
+    }
+
+    refreshButton.addEventListener("click", refreshDashboard);
+
+    refreshDashboard();
+    window.setInterval(refreshDashboard, 5000);
+})();
 </script>
-
-
-</body>
-
-</html>
+{% endblock %}
